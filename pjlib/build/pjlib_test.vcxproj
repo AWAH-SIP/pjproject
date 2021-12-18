@@ -78,7 +78,7 @@
   <Import Project="..\..\build\vs\pjproject-vs14-common-config.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6AC3EF61-5A9E-4F43-A809-5B2FD1A43B16}</ProjectGuid>
-    <RootNamespace>pjlib_test</RootNamespace>    
+    <RootNamespace>pjlib_test</RootNamespace>
     <!-- Specific UWP property -->
     <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
@@ -378,7 +378,6 @@
       <PrecompiledHeaderOutputFile />
     </ClCompile>
     <Link>
-      <AdditionalDependencies>netapi32.lib;mswsock.lib;ws2_32.lib;odbc32.lib;odbccp32.lib;oleaut32.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\bin\pjlib-test-$(TargetCPU)-$(Platform)-vc$(VSVer)-$(Configuration).exe</OutputFile>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
