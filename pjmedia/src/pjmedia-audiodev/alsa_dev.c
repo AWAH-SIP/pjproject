@@ -60,7 +60,7 @@
 static pj_status_t alsa_factory_init(pjmedia_aud_dev_factory *f);
 static pj_status_t alsa_factory_destroy(pjmedia_aud_dev_factory *f);
 static pj_status_t alsa_factory_refresh(pjmedia_aud_dev_factory *f);
-static unsigned    alsa_factory_get_dev_count(pjmedia_aud_dev_factory *f);
+static unsigned alsa_factory_get_dev_count(pjmedia_aud_dev_factory *f);
 static pj_status_t alsa_factory_get_dev_info(pjmedia_aud_dev_factory *f,
                                              unsigned index,
                                              pjmedia_aud_dev_info *info);
@@ -88,7 +88,6 @@ static pj_status_t alsa_stream_set_cap(pjmedia_aud_stream *strm,
 static pj_status_t alsa_stream_start(pjmedia_aud_stream *strm);
 static pj_status_t alsa_stream_stop(pjmedia_aud_stream *strm);
 static pj_status_t alsa_stream_destroy(pjmedia_aud_stream *strm);
-
 
 struct alsa_factory
 {
@@ -133,25 +132,23 @@ struct alsa_stream
 };
 
 static pjmedia_aud_dev_factory_op alsa_factory_op =
-{
-    &alsa_factory_init,
-    &alsa_factory_destroy,
-    &alsa_factory_get_dev_count,
-    &alsa_factory_get_dev_info,
-    &alsa_factory_default_param,
-    &alsa_factory_create_stream,
-    &alsa_factory_refresh
-};
+    {
+        &alsa_factory_init,
+        &alsa_factory_destroy,
+        &alsa_factory_get_dev_count,
+        &alsa_factory_get_dev_info,
+        &alsa_factory_default_param,
+        &alsa_factory_create_stream,
+        &alsa_factory_refresh};
 
 static pjmedia_aud_stream_op alsa_stream_op =
-{
-    &alsa_stream_get_param,
-    &alsa_stream_get_cap,
-    &alsa_stream_set_cap,
-    &alsa_stream_start,
-    &alsa_stream_stop,
-    &alsa_stream_destroy
-};
+    {
+        &alsa_stream_get_param,
+        &alsa_stream_get_cap,
+        &alsa_stream_set_cap,
+        &alsa_stream_start,
+        &alsa_stream_stop,
+        &alsa_stream_destroy};
 
 #if ENABLE_TRACING==0
 static void null_alsa_error_handler (const char *file,
@@ -184,7 +181,7 @@ static void alsa_error_handler (const char *file,
     index = snprintf (err_msg, sizeof(err_msg), "ALSA lib %s:%i:(%s) ",
                       file, line, function);
 #else
-    index = snprintf (err_msg, sizeof(err_msg), "ALSA lib: ");
+    index = snprintf(err_msg, sizeof(err_msg), "ALSA lib: ");
 #endif
     if (index < 1 || index >= (int)sizeof(err_msg)) {
         index = sizeof(err_msg)-1;
@@ -210,15 +207,17 @@ static void alsa_error_handler (const char *file,
         err_msg[index] = '\0';
     }
 print_msg:
-    PJ_LOG (4,(THIS_FILE, "%s", err_msg));
+    PJ_LOG(4, (THIS_FILE, "%s", err_msg));
 }
 
-
-static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
+static pj_status_t add_dev(struct alsa_factory *af, const char *dev_name)
 {
     pjmedia_aud_dev_info *adi;
-    snd_pcm_t* pcm;
+    snd_pcm_t *pcm;
+    snd_pcm_hw_params_t *params;
+    unsigned int incount, outcount;
     int pb_result, ca_result;
+    int err;
 
     if (af->dev_cnt >= PJ_ARRAY_SIZE(af->devs))
         return PJ_ETOOMANY;
@@ -228,20 +227,52 @@ static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
     TRACE_((THIS_FILE, "add_dev (%s): Enter", dev_name));
 
     /* Try to open the device in playback mode */
-    pb_result = snd_pcm_open (&pcm, dev_name, SND_PCM_STREAM_PLAYBACK, 0);
-    if (pb_result >= 0) {
+    pb_result = snd_pcm_open(&pcm, dev_name, SND_PCM_STREAM_PLAYBACK, 0);
+    if (pb_result >= 0)
+    {
         TRACE_((THIS_FILE, "Try to open the device for playback - success"));
-        snd_pcm_close (pcm);
-    } else {
+
+        /* Allocate a hardware parameters object. */
+        snd_pcm_hw_params_alloca(&params);
+
+        /* Fill it in with default values. */
+        snd_pcm_hw_params_any(pcm, params);
+
+        /* Get maximal accepted Channels of Device */
+        if ((err = snd_pcm_hw_params_get_channels(params, &outcount)) < 0)
+        {
+            outcount = 0;
+        }
+
+        snd_pcm_close(pcm);
+    }
+    else
+    {
         TRACE_((THIS_FILE, "Try to open the device for playback - failure"));
     }
 
     /* Try to open the device in capture mode */
-    ca_result = snd_pcm_open (&pcm, dev_name, SND_PCM_STREAM_CAPTURE, 0);
-    if (ca_result >= 0) {
+    ca_result = snd_pcm_open(&pcm, dev_name, SND_PCM_STREAM_CAPTURE, 0);
+    if (ca_result >= 0)
+    {
         TRACE_((THIS_FILE, "Try to open the device for capture - success"));
-        snd_pcm_close (pcm);
-    } else {
+
+        /* Allocate a hardware parameters object. */
+        snd_pcm_hw_params_alloca(&params);
+
+        /* Fill it in with default values. */
+        snd_pcm_hw_params_any(pcm, params);
+
+        /* Get maximal accepted Channels of Device */
+        if ((err = snd_pcm_hw_params_get_channels(params, &incount)) < 0)
+        {
+            incount = 0;
+        }
+
+        snd_pcm_close(pcm);
+    }
+    else
+    {
         TRACE_((THIS_FILE, "Try to open the device for capture - failure"));
     }
 
@@ -261,10 +292,10 @@ static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
     pj_ansi_strxcpy(adi->name, dev_name, sizeof(adi->name));
 
     /* Check the number of playback channels */
-    adi->output_count = (pb_result>=0) ? 1 : 0;
+    adi->output_count = (pb_result >= 0) ? outcount : 0;
 
     /* Check the number of capture channels */
-    adi->input_count = (ca_result>=0) ? 1 : 0;
+    adi->input_count = (ca_result >= 0) ? incount : 0;
 
     /* Set the default sample rate */
     adi->default_samples_per_sec = 8000;
@@ -274,7 +305,7 @@ static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
 
     ++af->dev_cnt;
 
-    PJ_LOG (5,(THIS_FILE, "Added sound device %s", adi->name));
+    PJ_LOG(5, (THIS_FILE, "Added sound device %s", adi->name));
 
     return PJ_SUCCESS;
 }
@@ -328,9 +359,8 @@ static void get_mixer_name(struct alsa_factory *af)
     snd_mixer_close(handle);
 }
 
-
 /* Create ALSA audio driver. */
-pjmedia_aud_dev_factory* pjmedia_alsa_factory(pj_pool_factory *pf)
+pjmedia_aud_dev_factory *pjmedia_alsa_factory(pj_pool_factory *pf)
 {
     struct alsa_factory *af;
     pj_pool_t *pool;
@@ -344,7 +374,6 @@ pjmedia_aud_dev_factory* pjmedia_alsa_factory(pj_pool_factory *pf)
     return &af->base;
 }
 
-
 /* API: init factory */
 static pj_status_t alsa_factory_init(pjmedia_aud_dev_factory *f)
 {
@@ -352,15 +381,14 @@ static pj_status_t alsa_factory_init(pjmedia_aud_dev_factory *f)
     if (PJ_SUCCESS != status)
         return status;
 
-    PJ_LOG(4,(THIS_FILE, "ALSA initialized"));
+    PJ_LOG(4, (THIS_FILE, "ALSA initialized"));
     return PJ_SUCCESS;
 }
-
 
 /* API: destroy factory */
 static pj_status_t alsa_factory_destroy(pjmedia_aud_dev_factory *f)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
 
     if (af->pool)
         pj_pool_release(af->pool);
@@ -377,11 +405,10 @@ static pj_status_t alsa_factory_destroy(pjmedia_aud_dev_factory *f)
     return PJ_SUCCESS;
 }
 
-
 /* API: refresh the device list */
 static pj_status_t alsa_factory_refresh(pjmedia_aud_dev_factory *f)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
     char **hints, **n;
     int err;
 
@@ -396,7 +423,7 @@ static pj_status_t alsa_factory_refresh(pjmedia_aud_dev_factory *f)
     af->dev_cnt = 0;
 
     /* Enumerate sound devices */
-    err = snd_device_name_hint(-1, "pcm", (void***)&hints);
+    err = snd_device_name_hint(-1, "pcm", (void ***)&hints);
     if (err != 0)
         return PJMEDIA_EAUD_SYSERR;
 
@@ -426,28 +453,26 @@ static pj_status_t alsa_factory_refresh(pjmedia_aud_dev_factory *f)
      */
     snd_lib_error_set_handler(alsa_error_handler);
 
-    err = snd_device_name_free_hint((void**)hints);
+    err = snd_device_name_free_hint((void **)hints);
 
-    PJ_LOG(4,(THIS_FILE, "ALSA driver found %d devices", af->dev_cnt));
+    PJ_LOG(4, (THIS_FILE, "ALSA driver found %d devices", af->dev_cnt));
 
     return PJ_SUCCESS;
 }
 
-
 /* API: get device count */
-static unsigned  alsa_factory_get_dev_count(pjmedia_aud_dev_factory *f)
+static unsigned alsa_factory_get_dev_count(pjmedia_aud_dev_factory *f)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
     return af->dev_cnt;
 }
-
 
 /* API: get device info */
 static pj_status_t alsa_factory_get_dev_info(pjmedia_aud_dev_factory *f,
                                              unsigned index,
                                              pjmedia_aud_dev_info *info)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
 
     PJ_ASSERT_RETURN(index<af->dev_cnt, PJ_EINVAL);
 
@@ -465,7 +490,7 @@ static pj_status_t alsa_factory_default_param(pjmedia_aud_dev_factory *f,
                                               unsigned index,
                                               pjmedia_aud_param *param)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
     pjmedia_aud_dev_info *adi;
 
     PJ_ASSERT_RETURN(index<af->dev_cnt, PJ_EINVAL);
@@ -500,8 +525,7 @@ static pj_status_t alsa_factory_default_param(pjmedia_aud_dev_factory *f,
     return PJ_SUCCESS;
 }
 
-
-static int pb_thread_func (void *arg)
+static int pb_thread_func(void *arg)
 {
     struct alsa_stream* stream = (struct alsa_stream*) arg;
     snd_pcm_t* pcm             = stream->pb_pcm;
@@ -512,13 +536,13 @@ static int pb_thread_func (void *arg)
     pj_timestamp tstamp;
     int result;
 
-    pj_bzero (buf, size);
+    pj_bzero(buf, size);
     tstamp.u64 = 0;
 
     TRACE_((THIS_FILE, "pb_thread_func(%u): Started",
             (unsigned)syscall(SYS_gettid)));
 
-    snd_pcm_prepare (pcm);
+    snd_pcm_prepare(pcm);
 
     while (!stream->quit) {
         pjmedia_frame frame;
@@ -552,9 +576,7 @@ static int pb_thread_func (void *arg)
     return PJ_SUCCESS;
 }
 
-
-
-static int ca_thread_func (void *arg)
+static int ca_thread_func(void *arg)
 {
     struct alsa_stream* stream = (struct alsa_stream*) arg;
     snd_pcm_t* pcm             = stream->ca_pcm;
@@ -565,7 +587,7 @@ static int ca_thread_func (void *arg)
     pj_timestamp tstamp;
     int result;
     struct sched_param param;
-    pthread_t* thid;
+    pthread_t *thid;
 
     thid = (pthread_t*) pj_thread_get_os_handle (pj_thread_this());
     param.sched_priority = sched_get_priority_max (SCHED_RR);
@@ -583,13 +605,13 @@ static int ca_thread_func (void *arg)
                                   result));
     }
 
-    pj_bzero (buf, size);
+    pj_bzero(buf, size);
     tstamp.u64 = 0;
 
     TRACE_((THIS_FILE, "ca_thread_func(%u): Started",
             (unsigned)syscall(SYS_gettid)));
 
-    snd_pcm_prepare (pcm);
+    snd_pcm_prepare(pcm);
 
     while (!stream->quit) {
         pjmedia_frame frame;
@@ -628,7 +650,7 @@ static int ca_thread_func (void *arg)
 static pj_status_t open_playback (struct alsa_stream* stream,
                                   const pjmedia_aud_param *param)
 {
-    snd_pcm_hw_params_t* params;
+    snd_pcm_hw_params_t *params;
     snd_pcm_format_t format;
     int result;
     unsigned int rate;
@@ -649,17 +671,18 @@ static pj_status_t open_playback (struct alsa_stream* stream,
         return PJMEDIA_EAUD_SYSERR;
 
     /* Allocate a hardware parameters object. */
-    snd_pcm_hw_params_alloca (&params);
+    snd_pcm_hw_params_alloca(&params);
 
     /* Fill it in with default values. */
-    snd_pcm_hw_params_any (stream->pb_pcm, params);
+    snd_pcm_hw_params_any(stream->pb_pcm, params);
 
     /* Set interleaved mode */
     snd_pcm_hw_params_set_access (stream->pb_pcm, params,
                                   SND_PCM_ACCESS_RW_INTERLEAVED);
 
     /* Set format */
-    switch (param->bits_per_sample) {
+    switch (param->bits_per_sample)
+    {
     case 8:
         TRACE_((THIS_FILE, "open_playback: set format SND_PCM_FORMAT_S8"));
         format = SND_PCM_FORMAT_S8;
@@ -681,7 +704,7 @@ static pj_status_t open_playback (struct alsa_stream* stream,
         format = SND_PCM_FORMAT_S16_LE;
         break;
     }
-    snd_pcm_hw_params_set_format (stream->pb_pcm, params, format);
+    snd_pcm_hw_params_set_format(stream->pb_pcm, params, format);
 
     /* Set number of channels */
     TRACE_((THIS_FILE, "open_playback: set channels: %d",
@@ -699,7 +722,7 @@ static pj_status_t open_playback (struct alsa_stream* stream,
     /* Set clock rate */
     rate = param->clock_rate;
     TRACE_((THIS_FILE, "open_playback: set clock rate: %d", rate));
-    snd_pcm_hw_params_set_rate_near (stream->pb_pcm, params, &rate, NULL);
+    snd_pcm_hw_params_set_rate_near(stream->pb_pcm, params, &rate, NULL);
     TRACE_((THIS_FILE, "open_playback: clock rate set to: %d", rate));
 
     /* Set period size to samples_per_frame frames. */
@@ -712,7 +735,7 @@ static pj_status_t open_playback (struct alsa_stream* stream,
                                             &tmp_period_size, NULL);
     /* Commenting this as it may cause the number of samples per frame
      * to be incorrest.
-     */  
+     */
     // stream->pb_frames = tmp_period_size > stream->pb_frames ?
     //                  tmp_period_size : stream->pb_frames;                                                                                
     TRACE_((THIS_FILE, "open_playback: period size set to: %d",
@@ -766,7 +789,7 @@ static pj_status_t open_playback (struct alsa_stream* stream,
 static pj_status_t open_capture (struct alsa_stream* stream,
                                  const pjmedia_aud_param *param)
 {
-    snd_pcm_hw_params_t* params;
+    snd_pcm_hw_params_t *params;
     snd_pcm_format_t format;
     int result;
     unsigned int rate;
@@ -787,17 +810,18 @@ static pj_status_t open_capture (struct alsa_stream* stream,
         return PJMEDIA_EAUD_SYSERR;
 
     /* Allocate a hardware parameters object. */
-    snd_pcm_hw_params_alloca (&params);
+    snd_pcm_hw_params_alloca(&params);
 
     /* Fill it in with default values. */
-    snd_pcm_hw_params_any (stream->ca_pcm, params);
+    snd_pcm_hw_params_any(stream->ca_pcm, params);
 
     /* Set interleaved mode */
     snd_pcm_hw_params_set_access (stream->ca_pcm, params,
                                   SND_PCM_ACCESS_RW_INTERLEAVED);
 
     /* Set format */
-    switch (param->bits_per_sample) {
+    switch (param->bits_per_sample)
+    {
     case 8:
         TRACE_((THIS_FILE, "open_capture: set format SND_PCM_FORMAT_S8"));
         format = SND_PCM_FORMAT_S8;
@@ -819,7 +843,7 @@ static pj_status_t open_capture (struct alsa_stream* stream,
         format = SND_PCM_FORMAT_S16_LE;
         break;
     }
-    snd_pcm_hw_params_set_format (stream->ca_pcm, params, format);
+    snd_pcm_hw_params_set_format(stream->ca_pcm, params, format);
 
     /* Set number of channels */
     TRACE_((THIS_FILE, "open_capture: set channels: %d",
@@ -837,7 +861,7 @@ static pj_status_t open_capture (struct alsa_stream* stream,
     /* Set clock rate */
     rate = param->clock_rate;
     TRACE_((THIS_FILE, "open_capture: set clock rate: %d", rate));
-    snd_pcm_hw_params_set_rate_near (stream->ca_pcm, params, &rate, NULL);
+    snd_pcm_hw_params_set_rate_near(stream->ca_pcm, params, &rate, NULL);
     TRACE_((THIS_FILE, "open_capture: clock rate set to: %d", rate));
 
     /* Set period size to samples_per_frame frames. */
@@ -900,7 +924,6 @@ static pj_status_t open_capture (struct alsa_stream* stream,
     return PJ_SUCCESS;
 }
 
-
 /* API: create stream */
 static pj_status_t alsa_factory_create_stream(pjmedia_aud_dev_factory *f,
                                               const pjmedia_aud_param *param,
@@ -909,24 +932,24 @@ static pj_status_t alsa_factory_create_stream(pjmedia_aud_dev_factory *f,
                                               void *user_data,
                                               pjmedia_aud_stream **p_strm)
 {
-    struct alsa_factory *af = (struct alsa_factory*)f;
+    struct alsa_factory *af = (struct alsa_factory *)f;
     pj_status_t status;
-    pj_pool_t* pool;
-    struct alsa_stream* stream;
+    pj_pool_t *pool;
+    struct alsa_stream *stream;
 
-    pool = pj_pool_create (af->pf, "alsa%p", 1024, 1024, NULL);
+    pool = pj_pool_create(af->pf, "alsa%p", 1024, 1024, NULL);
     if (!pool)
         return PJ_ENOMEM;
 
     /* Allocate and initialize comon stream data */
-    stream = PJ_POOL_ZALLOC_T (pool, struct alsa_stream);
+    stream = PJ_POOL_ZALLOC_T(pool, struct alsa_stream);
     stream->base.op = &alsa_stream_op;
     stream->pool      = pool;
     stream->af        = af;
     stream->user_data = user_data;
-    stream->pb_cb     = play_cb;
-    stream->ca_cb     = rec_cb;
-    stream->quit      = 0;
+    stream->pb_cb = play_cb;
+    stream->ca_cb = rec_cb;
+    stream->quit = 0;
     pj_memcpy(&stream->param, param, sizeof(*param));
 
     /* Init playback */
@@ -953,12 +976,11 @@ static pj_status_t alsa_factory_create_stream(pjmedia_aud_dev_factory *f,
     return PJ_SUCCESS;
 }
 
-
 /* API: get running parameter */
 static pj_status_t alsa_stream_get_param(pjmedia_aud_stream *s,
                                          pjmedia_aud_param *pi)
 {
-    struct alsa_stream *stream = (struct alsa_stream*)s;
+    struct alsa_stream *stream = (struct alsa_stream *)s;
 
     PJ_ASSERT_RETURN(s && pi, PJ_EINVAL);
 
@@ -967,13 +989,12 @@ static pj_status_t alsa_stream_get_param(pjmedia_aud_stream *s,
     return PJ_SUCCESS;
 }
 
-
 /* API: get capability */
 static pj_status_t alsa_stream_get_cap(pjmedia_aud_stream *s,
                                        pjmedia_aud_dev_cap cap,
                                        void *pval)
 {
-    struct alsa_stream *stream = (struct alsa_stream*)s;
+    struct alsa_stream *stream = (struct alsa_stream *)s;
 
     PJ_ASSERT_RETURN(s && pval, PJ_EINVAL);
 
@@ -994,13 +1015,12 @@ static pj_status_t alsa_stream_get_cap(pjmedia_aud_stream *s,
     }
 }
 
-
 /* API: set capability */
 static pj_status_t alsa_stream_set_cap(pjmedia_aud_stream *strm,
                                        pjmedia_aud_dev_cap cap,
                                        const void *value)
 {
-    struct alsa_factory *af = ((struct alsa_stream*)strm)->af;
+    struct alsa_factory *af = ((struct alsa_stream *)strm)->af;
 
     if ((cap==PJMEDIA_AUD_DEV_CAP_OUTPUT_VOLUME_SETTING &&
         pj_ansi_strlen(af->pb_mixer_name)) ||
@@ -1059,11 +1079,10 @@ static pj_status_t alsa_stream_set_cap(pjmedia_aud_stream *strm,
     return PJMEDIA_EAUD_INVCAP;
 }
 
-
 /* API: start stream */
-static pj_status_t alsa_stream_start (pjmedia_aud_stream *s)
+static pj_status_t alsa_stream_start(pjmedia_aud_stream *s)
 {
-    struct alsa_stream *stream = (struct alsa_stream*)s;
+    struct alsa_stream *stream = (struct alsa_stream *)s;
     pj_status_t status = PJ_SUCCESS;
 
     stream->quit = 0;
@@ -1098,11 +1117,10 @@ static pj_status_t alsa_stream_start (pjmedia_aud_stream *s)
     return status;
 }
 
-
 /* API: stop stream */
-static pj_status_t alsa_stream_stop (pjmedia_aud_stream *s)
+static pj_status_t alsa_stream_stop(pjmedia_aud_stream *s)
 {
-    struct alsa_stream *stream = (struct alsa_stream*)s;
+    struct alsa_stream *stream = (struct alsa_stream *)s;
 
     stream->quit = 1;
 
@@ -1133,13 +1151,11 @@ static pj_status_t alsa_stream_stop (pjmedia_aud_stream *s)
     return PJ_SUCCESS;
 }
 
-
-
-static pj_status_t alsa_stream_destroy (pjmedia_aud_stream *s)
+static pj_status_t alsa_stream_destroy(pjmedia_aud_stream *s)
 {
-    struct alsa_stream *stream = (struct alsa_stream*)s;
+    struct alsa_stream *stream = (struct alsa_stream *)s;
 
-    alsa_stream_stop (s);
+    alsa_stream_stop(s);
 
     if (stream->param.dir & PJMEDIA_DIR_PLAYBACK) {
         snd_pcm_close (stream->pb_pcm);
@@ -1150,7 +1166,7 @@ static pj_status_t alsa_stream_destroy (pjmedia_aud_stream *s)
         stream->ca_pcm = NULL;
     }
 
-    pj_pool_release (stream->pool);
+    pj_pool_release(stream->pool);
 
     return PJ_SUCCESS;
 }

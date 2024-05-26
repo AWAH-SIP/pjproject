@@ -987,6 +987,11 @@ static pj_bool_t ssock_on_accept_complete (pj_ssl_sock_t *ssock_parent,
     if (ssock->parent->param.grp_lock)
         pj_grp_lock_add_ref(ssock->parent->param.grp_lock);
 
+    /* Set parent and add ref count (avoid parent destroy during handshake) */
+    ssock->parent = ssock_parent;
+    if (ssock->parent->param.grp_lock)
+	pj_grp_lock_add_ref(ssock->parent->param.grp_lock);
+
     /* Update new SSL socket attributes */
     ssock->sock = newsock;
     ssock->is_server = PJ_TRUE;

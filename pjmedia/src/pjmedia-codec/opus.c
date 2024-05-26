@@ -730,9 +730,9 @@ static pj_status_t  codec_open( pjmedia_codec *codec,
 
     /* Initialize encoder */
     err = opus_encoder_init(opus_data->enc,
-                            opus_data->cfg.sample_rate,
-                            attr->info.channel_cnt,
-                            OPUS_APPLICATION_VOIP);
+			    opus_data->cfg.sample_rate,
+			    attr->info.channel_cnt,
+			    OPUS_APPLICATION_AUDIO);
     if (err != OPUS_OK) {
         PJ_LOG(2, (THIS_FILE, "Unable to create encoder: %s %d",
                    opus_strerror(err), err));
@@ -741,7 +741,7 @@ static pj_status_t  codec_open( pjmedia_codec *codec,
     }
     
     /* Set signal type */
-    opus_encoder_ctl(opus_data->enc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+    opus_encoder_ctl(opus_data->enc, OPUS_SET_SIGNAL(OPUS_AUTO));
     /* Set bitrate */
     opus_encoder_ctl(opus_data->enc, OPUS_SET_BITRATE(auto_bit_rate?
                                                       OPUS_AUTO:
