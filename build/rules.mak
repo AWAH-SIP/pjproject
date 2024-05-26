@@ -149,7 +149,7 @@ $(OBJDIR)/$(app).ko: $(OBJDIR)/$(app).o | $(OBJDIRS)
 	@echo all: >> $(OBJDIR)/Makefile
 	@echo -e "\tmake -C $(KERNEL_DIR) M=`pwd`/$(OBJDIR) modules $(KERNEL_ARCH)" >> $(OBJDIR)/Makefile
 	@echo Invoking kbuild...
-	make -C $(OBJDIR)
+	$(MAKE) -C $(OBJDIR)
 
 ../lib/$(app).ko: $(LIB) $(OBJDIR)/$(app).ko
 	cp $(OBJDIR)/$(app).ko ../lib
@@ -228,8 +228,8 @@ depend:
 	for F in $(FULL_SRCS); do \
 	   if test -f $$F; then \
 	     echo "$(OBJDIR)/" | tr -d '\n' >> $(DEP_FILE); \
-	     if echo $$F | grep -q .cpp$$; then \
-		dep="$(CC) -M $(DEPCXXFLAGS) $$F"; \
+	     if echo $$F | grep -q "\.c[c|pp]"; then \
+		dep="$(CXX) -M $(DEPCXXFLAGS) $$F"; \
 	     else \
 		dep="$(CC) -M $(DEPCFLAGS) $$F"; \
 	     fi; \

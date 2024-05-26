@@ -1,4 +1,3 @@
-/* $Id$ */
 /* 
  * Copyright (C) 2008-2011 Teluu Inc. (http://www.teluu.com)
  * Copyright (C) 2003-2008 Benny Prijono <benny@prijono.org>
@@ -27,7 +26,7 @@
 #define USEC    (1000000UL)
 #define MSEC    (1000)
 
-#define u64tohighprec(u64)	((pj_highprec_t)((pj_int64_t)(u64)))
+#define u64tohighprec(u64)      ((pj_highprec_t)((pj_int64_t)(u64)))
 
 static pj_highprec_t get_elapsed( const pj_timestamp *start,
                                   const pj_timestamp *stop )
@@ -65,16 +64,19 @@ static pj_highprec_t elapsed_msec( const pj_timestamp *start,
     freq += ts_freq.u32.lo;
 #endif
 
-    /* Avoid division by zero. */
-    if (freq == 0) freq = 1;
-
     /* Get elapsed time in cycles. */
     elapsed = get_elapsed(start, stop);
 
     /* usec = elapsed * MSEC / freq */
-    pj_highprec_mul(elapsed, MSEC);
-    pj_highprec_div(elapsed, freq);
-
+    pj_highprec_div(freq, MSEC);
+     
+    /* Avoid division by zero. */
+    if (freq == 0) {
+      /* Regard freq = 1 */
+      pj_highprec_mul(elapsed, MSEC);
+    } else {
+      pj_highprec_div(elapsed, freq);
+    }
     return elapsed;
 }
 

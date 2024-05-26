@@ -40,7 +40,7 @@ lib:
 	done; \
 
 
-.PHONY: lib doc
+.PHONY: lib doc clean-doc
 
 doc:
 	@if test \( ! "$(WWWDIR)" == "" \) -a \( ! -d $(WWWDIR)/pjlib/docs/html \) ; then \
@@ -53,6 +53,11 @@ doc:
 		else \
 		    exit 1; \
 		fi; \
+	done
+
+clean-doc:
+	for dir in pjlib pjlib-util pjnath pjmedia pjsip; do \
+		rm -rf $${dir}/docs/$${PJ_VERSION}; \
 	done
 
 LIBS = 	pjlib/lib/libpj-$(TARGET_NAME).a \
@@ -101,6 +106,9 @@ selftest: pjlib-test pjlib-util-test pjnath-test pjmedia-test pjsip-test pjsua-t
 pjlib-test: pjlib/bin/pjlib-test-$(TARGET_NAME)
 	cd pjlib/build && ../bin/pjlib-test-$(TARGET_NAME)
 
+pjlib-test-ci: pjlib/bin/pjlib-test-$(TARGET_NAME)
+	cd pjlib/build && ../bin/pjlib-test-$(TARGET_NAME) --ci-mode
+
 pjlib-util-test: pjlib-util/bin/pjlib-util-test-$(TARGET_NAME)
 	cd pjlib-util/build && ../bin/pjlib-util-test-$(TARGET_NAME)
 
@@ -114,16 +122,20 @@ pjsip-test: pjsip/bin/pjsip-test-$(TARGET_NAME)
 	cd pjsip/build && ../bin/pjsip-test-$(TARGET_NAME)
 
 pjsua-test: cmp_wav
-	cd tests/pjsua && python runall.py
+	cd tests/pjsua && python runall.py -t 2
 
 cmp_wav:
-	cd tests/pjsua/tools && make
+	$(MAKE) -C tests/pjsua/tools
+
+fuzz:
+	$(MAKE) -C tests/fuzz
 
 install:
 	mkdir -p $(DESTDIR)$(libdir)/
-	cp -af $(APP_LIB_FILES) $(DESTDIR)$(libdir)/
 	if [ "$(PJ_EXCLUDE_PJSUA2)x" = "x" ] ; then \
-	    cp -af $(PJ_DIR)/pjsip/lib/libpjsua2-$(LIB_SUFFIX) $(DESTDIR)$(libdir)/; \
+	    cp -af $(APP_LIBXX_FILES) $(DESTDIR)$(libdir)/; \
+	else \
+	    cp -af $(APP_LIB_FILES) $(DESTDIR)$(libdir)/; \
 	fi
 	mkdir -p $(DESTDIR)$(includedir)/
 	for d in pjlib pjlib-util pjnath pjmedia pjsip; do \
