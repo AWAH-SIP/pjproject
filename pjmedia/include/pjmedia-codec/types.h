@@ -57,30 +57,34 @@ enum pjmedia_audio_pt
      */
     PJMEDIA_RTP_PT_START = (PJMEDIA_RTP_PT_DYNAMIC - 1),
 
-    PJMEDIA_RTP_PT_SPEEX_NB,   /**< Speex narrowband/8KHz  */
-    PJMEDIA_RTP_PT_SPEEX_WB,   /**< Speex wideband/16KHz   */
-    PJMEDIA_RTP_PT_SPEEX_UWB,  /**< Speex 32KHz	    */
-    PJMEDIA_RTP_PT_SILK_NB,    /**< SILK narrowband/8KHz   */
-    PJMEDIA_RTP_PT_SILK_MB,    /**< SILK mediumband/12KHz  */
-    PJMEDIA_RTP_PT_SILK_WB,    /**< SILK wideband/16KHz    */
-    PJMEDIA_RTP_PT_SILK_SWB,   /**< SILK 24KHz		    */
-    PJMEDIA_RTP_PT_ILBC,       /**< iLBC (13.3/15.2Kbps)   */
-    PJMEDIA_RTP_PT_AMR,        /**< AMR (4.75 - 12.2Kbps)  */
-    PJMEDIA_RTP_PT_AMRWB,      /**< AMRWB (6.6 - 23.85Kbps)*/
-    PJMEDIA_RTP_PT_AMRWBE,     /**< AMRWBE		    */
-    PJMEDIA_RTP_PT_G726_16,    /**< G726 @ 16Kbps	    */
-    PJMEDIA_RTP_PT_G726_24,    /**< G726 @ 24Kbps	    */
-    PJMEDIA_RTP_PT_G726_32,    /**< G726 @ 32Kbps	    */
-    PJMEDIA_RTP_PT_G726_40,    /**< G726 @ 40Kbps	    */
-    PJMEDIA_RTP_PT_G722_1_16,  /**< G722.1 (16Kbps)	    */
-    PJMEDIA_RTP_PT_G722_1_24,  /**< G722.1 (24Kbps)	    */
-    PJMEDIA_RTP_PT_G722_1_32,  /**< G722.1 (32Kbps)	    */
-    PJMEDIA_RTP_PT_G7221C_24,  /**< G722.1 Annex C (24Kbps)*/
-    PJMEDIA_RTP_PT_G7221C_32,  /**< G722.1 Annex C (32Kbps)*/
-    PJMEDIA_RTP_PT_G7221C_48,  /**< G722.1 Annex C (48Kbps)*/
-    PJMEDIA_RTP_PT_G7221_RSV1, /**< G722.1 reserve	    */
-    PJMEDIA_RTP_PT_G7221_RSV2, /**< G722.1 reserve	    */
-    PJMEDIA_RTP_PT_OPUS,       /**< OPUS                   */
+    PJMEDIA_RTP_PT_SPEEX_NB,                    /**< Speex narrowband/8KHz  */
+    PJMEDIA_RTP_PT_SPEEX_WB,                    /**< Speex wideband/16KHz   */
+    PJMEDIA_RTP_PT_SPEEX_UWB,                   /**< Speex 32KHz            */
+    PJMEDIA_RTP_PT_SILK_NB,                     /**< SILK narrowband/8KHz   */
+    PJMEDIA_RTP_PT_SILK_MB,                     /**< SILK mediumband/12KHz  */
+    PJMEDIA_RTP_PT_SILK_WB,                     /**< SILK wideband/16KHz    */
+    PJMEDIA_RTP_PT_SILK_SWB,                    /**< SILK 24KHz             */
+    PJMEDIA_RTP_PT_ILBC,                        /**< iLBC (13.3/15.2Kbps)   */
+    PJMEDIA_RTP_PT_AMR,                         /**< AMR (4.75 - 12.2Kbps)  */
+    PJMEDIA_RTP_PT_AMRWB,                       /**< AMRWB (6.6 - 23.85Kbps)*/
+    PJMEDIA_RTP_PT_AMRWBE,                      /**< AMRWBE                 */
+    PJMEDIA_RTP_PT_G726_16,                     /**< G726 @ 16Kbps          */
+    PJMEDIA_RTP_PT_G726_24,                     /**< G726 @ 24Kbps          */
+    PJMEDIA_RTP_PT_G726_32,                     /**< G726 @ 32Kbps          */
+    PJMEDIA_RTP_PT_G726_40,                     /**< G726 @ 40Kbps          */
+    PJMEDIA_RTP_PT_G722_1_16,                   /**< G722.1 (16Kbps)        */
+    PJMEDIA_RTP_PT_G722_1_24,                   /**< G722.1 (24Kbps)        */
+    PJMEDIA_RTP_PT_G722_1_32,                   /**< G722.1 (32Kbps)        */
+    PJMEDIA_RTP_PT_G7221C_24,                   /**< G722.1 Annex C (24Kbps)*/
+    PJMEDIA_RTP_PT_G7221C_32,                   /**< G722.1 Annex C (32Kbps)*/
+    PJMEDIA_RTP_PT_G7221C_48,                   /**< G722.1 Annex C (48Kbps)*/
+    PJMEDIA_RTP_PT_G7221_RSV1,                  /**< G722.1 reserve         */
+    PJMEDIA_RTP_PT_G7221_RSV2,                  /**< G722.1 reserve         */
+    PJMEDIA_RTP_PT_OPUS,                        /**< OPUS                   */
+    PJMEDIA_RTP_PT_LYRA_8,                      /**< LYRA @ 8KHz            */
+    PJMEDIA_RTP_PT_LYRA_16,                     /**< LYRA @ 16KHz           */
+    PJMEDIA_RTP_PT_LYRA_32,                     /**< LYRA @ 32KHz           */
+    PJMEDIA_RTP_PT_LYRA_48,                     /**< LYRA @ 48KHz           */
 #if PJMEDIA_CODEC_L16_HAS_8KHZ_MONO
     PJMEDIA_RTP_PT_L16_8KHZ_MONO, /**< L16 @ 8KHz, mono	    */
 #endif
