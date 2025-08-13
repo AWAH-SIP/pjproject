@@ -15,6 +15,18 @@
 #define PJSUA_MAX_CALLS 255
 #define PJSUA_MAX_ACC 64
 
+#define PJSUA_DEFAULT_SND_USE_SW_CLOCK  PJ_TRUE
+
 #define PJSUA_PRES_TIMER 30
 
 #define PJ_EXCLUDE_BENCHMARK_TESTS 1
+
+/* Enable WebRTC-related features for pjproject build */
+#define PJMEDIA_HAS_WEBRTC_AEC 1
+
+#define PJMEDIA_SRTP_HAS_AES_GCM_256      1
+#define PJMEDIA_SRTP_HAS_AES_GCM_128      1
+
+#define PJ_HAS_SSL_SOCK 1
+#define PJMEDIA_SRTP_HAS_DTLS 1
+#define PJ_ICE_MAX_CAND 64
